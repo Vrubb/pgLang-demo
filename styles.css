@@ -56,16 +56,18 @@ body:active {
 }
 
 .letter {
+    position: absolute;
     font-size: 30px;
     font-weight: 700;
-    margin: 0 15px;
     opacity: 0.7;
     transition: opacity 0.3s;
     pointer-events: auto;
     white-space: nowrap;
+    width: 60px;
     height: 60px;
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .letter:hover {
