@@ -75,6 +75,7 @@ body:active {
     font-family: 'Times New Roman', Times, serif;
     color: black;
     font-weight: normal;
+    margin: 20px;
 }
 
 .letter:hover {
@@ -122,3 +123,19 @@ body:active {
     font-size: 1.5rem;
     cursor: pointer;
 }
+
+.popup-box {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  max-height: 400px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 16px;
+  font-family: 'Times New Roman', Times, serif;
+  display: none; /* hidden by default */
+  overflow-y: auto;
+  z-index: 1000;
+}
+
