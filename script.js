@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 letter.dataset.parallaxX = (Math.sin(r/10 + c/10) * PARALLAX_INTENSITY).toFixed(2);
                 letter.dataset.parallaxY = (Math.cos(r/10 + c/10) * PARALLAX_INTENSITY).toFixed(2);
 
+                const speedY = parseFloat(col.dataset.speedY);
+                    let y = -scrollY * speedY;
+
                 // Make "G" interactive
                 if (letter.textContent === 'G') {
                     letter.style.opacity = '1';
