@@ -118,6 +118,3 @@ body:active {
     transition: transform 0.3s ease-out, opacity 0.3s;
     will-change: transform;
 }
-
-[data-parallax-x] { transition-duration: 0.4s; }
-[data-parallax-y] { transition-duration: 0.5s; }
