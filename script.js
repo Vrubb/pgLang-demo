@@ -1,111 +1,108 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const LETTERS = "KEOENHXYZLRTBAWQMSD"; // Randomized alphabet
-    const ROW_COUNT = 20;
-    const COLUMN_COUNT = 20;
-    const LETTER_SIZE = 60;
-    const PARALLAX_DEPTH = 10; // Number of layers of depth
-    const PARALLAX_STEP = 0.03; // Parallax difference between layers
-    const SCROLL_EASING = 0.1;
+document.addEventListener('DOMContentLoaded', () => {
+  const LETTERS = "KEOENHXYZLRTBAWQMSD";
+  const TILE_ROWS = 10;
+  const TILE_COLS = 10;
+  const TILE_SIZE = 60;
+  const WRAP = 3; // Repeat 3x in each direction
 
-    const gridContainer = document.getElementById('gridContainer');
-    const grid = document.getElementById('grid');
-    const popup = document.getElementById('popup');
-    const closePopup = document.querySelector('.close-popup');
+  const grid = document.getElementById('grid');
+  const popup = document.getElementById('popup');
+  const closePopup = document.querySelector('.close-popup');
 
-    let scrollX = 0;
-    let scrollY = 0;
-    let targetX = 0;
-    let targetY = 0;
-    let isDragging = false;
-    let startX, startY;
-    let offsetX = 0;
-    let offsetY = 0;
+  let isDragging = false;
+  let startX = 0, startY = 0;
+  let offsetX = 0, offsetY = 0;
+  let velocityX = 0, velocityY = 0;
 
-    function createGrid() {
-        grid.innerHTML = '';
-        grid.style.width = `${COLUMN_COUNT * LETTER_SIZE}px`;
-        grid.style.height = `${ROW_COUNT * LETTER_SIZE}px`;
-
-        for (let r = 0; r < ROW_COUNT; r++) {
-            const row = document.createElement('div');
-            row.className = 'row';
-            row.dataset.depth = (r % PARALLAX_DEPTH); // Assign depth layer
-
-            for (let c = 0; c < COLUMN_COUNT; c++) {
-                const letter = document.createElement('div');
-                letter.className = 'letter';
-
-                const randomChar = LETTERS[Math.floor(Math.random() * LETTERS.length)];
-                letter.textContent = randomChar;
-
-                if (randomChar === 'G') {
-                    letter.style.opacity = '1';
-                    letter.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        popup.classList.add('active');
-                    });
-                }
-
-                row.appendChild(letter);
-            }
-
-            grid.appendChild(row);
-        }
+  // Create base tile (10x10)
+  const baseTile = [];
+  for (let r = 0; r < TILE_ROWS; r++) {
+    const row = [];
+    for (let c = 0; c < TILE_COLS; c++) {
+      const char = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+      row.push(char);
     }
+    baseTile.push(row);
+  }
 
-    function animate() {
-        scrollX += (targetX - scrollX) * SCROLL_EASING;
-        scrollY += (targetY - scrollY) * SCROLL_EASING;
+  // Create wrapped grid (3x3 tile repeats = 30x30 letters)
+  const totalRows = TILE_ROWS * WRAP;
+  const totalCols = TILE_COLS * WRAP;
 
-        const modX = scrollX % (COLUMN_COUNT * LETTER_SIZE);
-        const modY = scrollY % (ROW_COUNT * LETTER_SIZE);
+  for (let r = 0; r < totalRows; r++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'row';
+    rowDiv.dataset.depth = r % WRAP;
 
-        [...grid.children].forEach(row => {
-            const depth = parseInt(row.dataset.depth);
-            const parallaxOffset = depth * PARALLAX_STEP;
+    for (let c = 0; c < totalCols; c++) {
+      const letter = document.createElement('div');
+      letter.className = 'letter';
+      const baseChar = baseTile[r % TILE_ROWS][c % TILE_COLS];
+      letter.textContent = baseChar;
 
-            const transformX = modX;
-            const transformY = modY * (1 + parallaxOffset);
-
-            row.style.transform = `translate(${transformX}px, ${transformY}px)`;
+      if (baseChar === 'G') {
+        letter.style.opacity = '1';
+        letter.addEventListener('click', e => {
+          e.stopPropagation();
+          popup.classList.add('active');
         });
+      }
 
-        animationFrameId = requestAnimationFrame(animate);
+      rowDiv.appendChild(letter);
+    }
+    grid.appendChild(rowDiv);
+  }
+
+  function animate() {
+    // Slow scroll easing
+    offsetX += velocityX;
+    offsetY += velocityY;
+    velocityX *= 0.9;
+    velocityY *= 0.9;
+
+    // Wrap scroll to loop forever
+    const maxX = TILE_SIZE * totalCols;
+    const maxY = TILE_SIZE * totalRows;
+    const wrappedX = ((offsetX % maxX) + maxX) % maxX;
+    const wrappedY = ((offsetY % maxY) + maxY) % maxY;
+
+    const rows = grid.children;
+    for (let i = 0; i < rows.length; i++) {
+      const depth = parseInt(rows[i].dataset.depth);
+      const parallax = 1 + depth * 0.05; // stair effect
+      rows[i].style.transform = `translate(
+        ${-wrappedX}px,
+        ${-wrappedY * parallax}px
+      )`;
     }
 
-    function handleMouseDown(e) {
-        isDragging = true;
-        startX = e.clientX - targetX;
-        startY = e.clientY - targetY;
-        document.body.style.cursor = 'grabbing';
-        e.preventDefault();
-    }
+    requestAnimationFrame(animate);
+  }
 
-    function handleMouseMove(e) {
-        if (!isDragging) return;
-        targetX = e.clientX - startX;
-        targetY = e.clientY - startY;
-        e.preventDefault();
-    }
+  // Drag handling
+  document.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+  });
 
-    function handleMouseUp() {
-        isDragging = false;
-        document.body.style.cursor = 'grab';
-    }
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    velocityX = (startX - e.clientX) * 0.2;
+    velocityY = (startY - e.clientY) * 0.2;
+    startX = e.clientX;
+    startY = e.clientY;
+  });
 
-    function init() {
-        createGrid();
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
 
-        gridContainer.addEventListener('mousedown', handleMouseDown);
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-        document.addEventListener('mouseleave', handleMouseUp);
+  document.addEventListener('mouseleave', () => {
+    isDragging = false;
+  });
 
-        closePopup.addEventListener('click', () => popup.classList.remove('active'));
+  closePopup.addEventListener('click', () => popup.classList.remove('active'));
 
-        animate();
-    }
-
-    init();
+  animate();
 });
-
