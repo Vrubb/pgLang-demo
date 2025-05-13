@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration
     const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const ROW_COUNT = 100;
-    const COLUMN_COUNT = 100;
+    const ROW_COUNT = 100;   // Rows (vertical)
+    const COLUMN_COUNT = 100; // Columns (horizontal)
     const SCROLL_SPEED = 0.08;
-    const LETTER_SIZE = 60;
-    const PARALLAX_INTENSITY = 0.3; // Added parallax control
+    const LETTER_SIZE = 60;   // px
+    const PARALLAX_RANGE = 0.3;
     
     // DOM Elements
     const gridContainer = document.getElementById('gridContainer');
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let startX, startY;
     let animationId = null;
     
-    // Create grid with randomized letters
+    // Create grid
     function createGrid() {
         grid.innerHTML = '';
         grid.style.width = `${COLUMN_COUNT * LETTER_SIZE}px`;
@@ -37,17 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let c = 0; c < COLUMN_COUNT; c++) {
                 const letter = document.createElement('div');
                 letter.className = 'letter';
-                // Random letter generation
-                const randomIndex = Math.floor(Math.random() * LETTERS.length);
-                letter.textContent = LETTERS[randomIndex];
+                const letterIndex = (r + c) % LETTERS.length;
+                letter.textContent = LETTERS[letterIndex];
                 
-                // Add parallax data attributes
-                letter.dataset.parallaxX = (Math.sin(r/10 + c/10) * PARALLAX_INTENSITY).toFixed(2);
-                letter.dataset.parallaxY = (Math.cos(r/10 + c/10) * PARALLAX_INTENSITY).toFixed(2);
-
-                const speedY = parseFloat(col.dataset.speedY);
-                    let y = -scrollY * speedY;
-
                 // Make "G" interactive
                 if (letter.textContent === 'G') {
                     letter.style.opacity = '1';
@@ -64,42 +56,61 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Animation loop with parallax
+     function animate() {
+                // Apply controlled easing
+                scrollX += (targetX - scrollX) * 0.1;
+                scrollY += (targetY - scrollY) * 0.1;
+                
+                // Apply scroll with controlled parallax
+                columns.forEach(column => {
+                    const speed = parseFloat(column.dataset.speed);
+                    const baseTop = parseFloat(column.dataset.baseTop);
+                    const x = scrollX * 0.2; // Reduced horizontal movement
+                    const y = scrollY * speed;
+                    
+                    // Calculate vertical position with wrapping
+                    let currentY = baseTop + y;
+                    const colHeight = LETTERS_PER_COLUMN * LETTER_HEIGHT;
+                    
+                    // Smooth vertical wrapping
+                    if (currentY > window.innerHeight + 100) {
+                        column.dataset.baseTop = -colHeight + (Math.random() * -200);
+                        currentY = parseFloat(column.dataset.baseTop) + y;
+                    } 
+                    else if (currentY + colHeight < -100) {
+                        column.dataset.baseTop = window.innerHeight + (Math.random() * 200);
+                        currentY = parseFloat(column.dataset.baseTop) + y;
+                    }
+                    
+                    column.style.transform = `translate(${x}px, ${y}px)`;
+                    column.style.top = `${currentY - y}px`; // Maintain base position
+                });
+                
+                animationId = requestAnimationFrame(animate);
+            }
+    
+    // Animation loop
     function animate() {
         // Apply easing
         scrollX += (targetX - scrollX) * SCROLL_SPEED;
         scrollY += (targetY - scrollY) * SCROLL_SPEED;
         
-        // Apply parallax transformation
-        const letters = document.getElementsByClassName('letter');
-        for(let letter of letters) {
-            const px = parseFloat(letter.dataset.parallaxX);
-            const py = parseFloat(letter.dataset.parallaxY);
-            letter.style.transform = `translate(
-                ${scrollX * px}px,
-                ${scrollY * py}px
-            )`;
-        }
-
         // Infinite scroll wrapping
         const maxX = grid.offsetWidth - gridContainer.offsetWidth;
         const maxY = grid.offsetHeight - gridContainer.offsetHeight;
         
-        if (scrollX > maxX) scrollX -= maxX;
-        if (scrollX < -maxX) scrollX += maxX;
-        if (scrollY > maxY) scrollY -= maxY;
-        if (scrollY < -maxY) scrollY += maxY;
-
-        // Apply main scroll transform
-        grid.style.transform = `translate(
-            ${scrollX}px,
-            ${scrollY}px
-        )`;
-
+        if (scrollX > 0) scrollX = -maxX;
+        if (scrollX < -maxX) scrollX = 0;
+        if (scrollY > 0) scrollY = -maxY;
+        if (scrollY < -maxY) scrollY = 0;
+        
+        // Apply transform
+        grid.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
+        
         animationId = requestAnimationFrame(animate);
     }
-
-    // Improved drag handling
+    
+    // Event handlers
     function handleMouseDown(e) {
         isDragging = true;
         startX = e.clientX - scrollX;
@@ -107,23 +118,35 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.cursor = 'grabbing';
         e.preventDefault();
     }
-
+    
     function handleMouseMove(e) {
         if (!isDragging) return;
         
-        // Smoother drag calculation
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-        
-        targetX = deltaX * 0.8; // Reduced speed multiplier
-        targetY = deltaY * 0.8;
-        
+        targetX = (e.clientX - startX) * 1.2;
+        targetY = (e.clientY - startY) * 1.2;
         e.preventDefault();
     }
-
-    // Rest of the code remains the same...
-    // Keep all other existing functions and initialization code
-});
+    
+    function handleMouseUp() {
+        isDragging = false;
+        document.body.style.cursor = 'grab';
+    }
+    
+    // Initialize
+    function init() {
+        createGrid();
+        
+        // Event listeners
+        gridContainer.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.addEventListener('mouseleave', handleMouseUp);
+        
+        closePopup.addEventListener('click', function() {
+            popup.classList.remove('active');
+        });
+        
+        animate();
     }
     
     init();
