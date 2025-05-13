@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const GRID_SIZE = 10; // Visual tile count (10x10)
-    const LETTER_SIZE = 60;
+    const LETTER_SIZE = 100;
     const PARALLAX_VARIATION = 0.3;
     const SCROLL_EASING = 0.1;
 
