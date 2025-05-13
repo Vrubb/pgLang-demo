@@ -1,33 +1,26 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Configuration
-    const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const ROW_COUNT = 100;
-    const COLUMN_COUNT = 100;
-    const SCROLL_SPEED = 0.08;
+    const LETTERS = "KEOENHXYZLRTBAWQMSD"; // Randomized alphabet
+    const ROW_COUNT = 20;
+    const COLUMN_COUNT = 20;
     const LETTER_SIZE = 60;
-    const PARALLAX_RANGE = 0.3;
+    const PARALLAX_DEPTH = 10; // Number of layers of depth
+    const PARALLAX_STEP = 0.03; // Parallax difference between layers
+    const SCROLL_EASING = 0.1;
 
-    // DOM Elements
     const gridContainer = document.getElementById('gridContainer');
     const grid = document.getElementById('grid');
     const popup = document.getElementById('popup');
     const closePopup = document.querySelector('.close-popup');
 
-    // State
     let scrollX = 0;
     let scrollY = 0;
     let targetX = 0;
     let targetY = 0;
     let isDragging = false;
-    let startX = 0, startY = 0;
-    let animationId = null;
+    let startX, startY;
+    let offsetX = 0;
+    let offsetY = 0;
 
-    // Generate random letter
-    function getRandomLetter() {
-        return LETTERS[Math.floor(Math.random() * LETTERS.length)];
-    }
-
-    // Create the grid
     function createGrid() {
         grid.innerHTML = '';
         grid.style.width = `${COLUMN_COUNT * LETTER_SIZE}px`;
@@ -36,13 +29,16 @@ document.addEventListener('DOMContentLoaded', function () {
         for (let r = 0; r < ROW_COUNT; r++) {
             const row = document.createElement('div');
             row.className = 'row';
+            row.dataset.depth = (r % PARALLAX_DEPTH); // Assign depth layer
 
             for (let c = 0; c < COLUMN_COUNT; c++) {
                 const letter = document.createElement('div');
                 letter.className = 'letter';
-                letter.textContent = getRandomLetter();
 
-                if (letter.textContent === 'G') {
+                const randomChar = LETTERS[Math.floor(Math.random() * LETTERS.length)];
+                letter.textContent = randomChar;
+
+                if (randomChar === 'G') {
                     letter.style.opacity = '1';
                     letter.addEventListener('click', function (e) {
                         e.stopPropagation();
@@ -57,53 +53,39 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Main animation loop
     function animate() {
-        scrollX += (targetX - scrollX) * SCROLL_SPEED;
-        scrollY += (targetY - scrollY) * SCROLL_SPEED;
+        scrollX += (targetX - scrollX) * SCROLL_EASING;
+        scrollY += (targetY - scrollY) * SCROLL_EASING;
 
-        const maxX = grid.offsetWidth - gridContainer.offsetWidth;
-        const maxY = grid.offsetHeight - gridContainer.offsetHeight;
+        const modX = scrollX % (COLUMN_COUNT * LETTER_SIZE);
+        const modY = scrollY % (ROW_COUNT * LETTER_SIZE);
 
-        // Wrap scroll for infinite feel
-        if (scrollX > 0) scrollX = -maxX;
-        if (scrollX < -maxX) scrollX = 0;
-        if (scrollY > 0) scrollY = -maxY;
-        if (scrollY < -maxY) scrollY = 0;
+        [...grid.children].forEach(row => {
+            const depth = parseInt(row.dataset.depth);
+            const parallaxOffset = depth * PARALLAX_STEP;
 
-        // Apply main grid transform
-        grid.style.transform = `translate(${scrollX}px, ${scrollY}px)`;
+            const transformX = modX;
+            const transformY = modY * (1 + parallaxOffset);
 
-        // Apply vertical parallax to each row
-        const rows = document.querySelectorAll('.row');
-        rows.forEach((row, i) => {
-            const offset = (i / ROW_COUNT - 0.5) * PARALLAX_RANGE * scrollY;
-            row.style.transform = `translateY(${offset}px)`;
+            row.style.transform = `translate(${transformX}px, ${transformY}px)`;
         });
 
-        animationId = requestAnimationFrame(animate);
+        animationFrameId = requestAnimationFrame(animate);
     }
 
-    // Mouse event handlers
     function handleMouseDown(e) {
-        if (popup.classList.contains('active')) return; // Don't allow drag when popup is open
         isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
+        startX = e.clientX - targetX;
+        startY = e.clientY - targetY;
         document.body.style.cursor = 'grabbing';
+        e.preventDefault();
     }
 
     function handleMouseMove(e) {
         if (!isDragging) return;
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-
-        targetX += dx;
-        targetY += dy;
-
-        startX = e.clientX;
-        startY = e.clientY;
+        targetX = e.clientX - startX;
+        targetY = e.clientY - startY;
+        e.preventDefault();
     }
 
     function handleMouseUp() {
@@ -111,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.style.cursor = 'grab';
     }
 
-    // Initialization
     function init() {
         createGrid();
 
@@ -120,12 +101,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.addEventListener('mouseup', handleMouseUp);
         document.addEventListener('mouseleave', handleMouseUp);
 
-        closePopup.addEventListener('click', () => {
-            popup.classList.remove('active');
-        });
+        closePopup.addEventListener('click', () => popup.classList.remove('active'));
 
         animate();
     }
 
     init();
 });
+
