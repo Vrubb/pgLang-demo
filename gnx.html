@@ -1,29 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>pgLang | GNX</title>
-        <link rel="stylesheet" href="styles.css">
-    </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GNX</title>
+  <link rel="stylesheet" href="gnx.css" />
+</head>
 <body>
-    <nav class="top-nav">
-        <a href="index.html" class="nav-btn circle">○</a>
-        <a href="#" class="nav-btn triangle">△</a>
-    </nav>
-    <div class="record-player">
-        <img src="image.png" alt="Record Player" id="record-image">
+  <div class="container">
+    <div class="left">
+      <img src="turntable.png" alt="Turntable" class="turntable" />
+      <div class="waveform">
+        <img src="waveform-placeholder.png" alt="waveform" />
+      </div>
+      <div class="controls">
+        <span>2:13</span>
+        <input type="range" min="0" max="100" value="50" class="progress-bar" />
+        <span>4:35</span>
+      </div>
+      <div class="buttons">
+        <button>⏮</button>
+        <button>⏸</button>
+        <button>⏭</button>
+      </div>
     </div>
-    <div class="music-player">
-        <audio id="audio" src="GNX.mp3"></audio>
-        <div class="controls">
-            <button id="prev-btn">⏮</button>
-            <button id="play-btn">⏵</button>
-            <button id="next-btn">⏭</button>
-        </div>
-        <input type="range" id="progress-bar" value="0">
-        <span id="time">0:00 / 3:45</span>
+
+    <div class="right">
+      <h1>GNX <span>Kendrick Lamar</span></h1>
+      <ul class="tracklist">
+        <li>wacced out murals <span>5:17</span></li>
+        <li>squabble up <span>2:37</span></li>
+        <li>lluther (with sza) <span>2:57</span></li>
+        <li>man at the garden <span>3:53</span></li>
+        <li>hey now (feat. dody6) <span>3:37</span></li>
+        <li><strong>reincarnated</strong> <span>4:35</span></li>
+        <li>tv off (feat. lefty gunplay) <span>3:30</span></li>
+        <li>dodger blue (...) <span>2:11</span></li>
+        <li>peekaboo (...) <span>2:35</span></li>
+        <li>heart pt.6 <span>4:52</span></li>
+        <li>gnx (...) <span>3:13</span></li>
+        <li>gloria (with sza) <span>4:47</span></li>
+      </ul>
+      <div class="photos">
+        <img src="photo1.jpg" />
+        <img src="photo2.jpg" />
+        <img src="photo3.jpg" />
+      </div>
     </div>
-    <script src="music-player.js"></script>
+  </div>
 </body>
 </html>
