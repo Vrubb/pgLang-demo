@@ -134,7 +134,7 @@ body:active {
   border: 1px solid #ccc;
   padding: 16px;
   font-family: 'Times New Roman', Times, serif;
-  display: none; /* hidden by default */
+  display: none;
   overflow-y: auto;
   z-index: 1000;
 }
