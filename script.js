@@ -1,25 +1,20 @@
 document.addEventListener('DOMContentLoaded', function () {
     const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const GRID_SIZE = 10; // Visual tile count (10x10)
+    const GRID_SIZE = 10;
     const LETTER_SIZE = 100;
     const PARALLAX_VARIATION = 0.3;
     const SCROLL_EASING = 0.1;
-
     const gridContainer = document.getElementById('gridContainer');
     const grid = document.getElementById('grid');
     const popup = document.getElementById('popup');
     const closePopup = document.querySelector('.close-popup');
-
     let virtualScrollX = 0;
     let virtualScrollY = 0;
     let targetScrollX = 0;
     let targetScrollY = 0;
-
     let isDragging = false;
     let startX, startY;
-
     let tiles = [];
-
     function getRandomLetter() {
         return LETTERS[Math.floor(Math.random() * LETTERS.length)];
     }
@@ -34,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const letter = document.createElement('div');
                 letter.className = 'letter';
                 letter.textContent = getRandomLetter();
-
                 if (letter.textContent === 'G') {
                     letter.style.opacity = '1';
                     letter.addEventListener('click', function (e) {
@@ -44,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 grid.appendChild(letter);
-
                 tiles.push({
                     element: letter,
                     baseX: x,
@@ -58,17 +51,13 @@ document.addEventListener('DOMContentLoaded', function () {
     function animate() {
         virtualScrollX += (targetScrollX - virtualScrollX) * SCROLL_EASING;
         virtualScrollY += (targetScrollY - virtualScrollY) * SCROLL_EASING;
-
         const gridWidth = GRID_SIZE * LETTER_SIZE;
         const gridHeight = GRID_SIZE * LETTER_SIZE;
-
         tiles.forEach(tile => {
             let x = tile.baseX * LETTER_SIZE;
             let y = tile.baseY * LETTER_SIZE;
-
             let offsetX = ((x - virtualScrollX) % gridWidth + gridWidth) % gridWidth;
             let offsetY = ((y - virtualScrollY * (1 + tile.parallaxOffset)) % gridHeight + gridHeight) % gridHeight;
-
             tile.element.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
         });
 
@@ -95,14 +84,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function init() {
         createGrid();
-
         gridContainer.addEventListener('mousedown', handleMouseDown);
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
         document.addEventListener('mouseleave', handleMouseUp);
-
         closePopup.addEventListener('click', () => popup.classList.remove('active'));
-
         animate();
     }
 
